@@ -38,8 +38,8 @@ def segment(image, threshold=25):
     thresholded = cv2.threshold(diff,
                                 threshold,
                                 255,
-                                cv2.THRESH_BINARY)[1]
-
+                                cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+ 
     # get the contours in the thresholded image
     (cnts, _) = cv2.findContours(thresholded.copy(),
                                     cv2.RETR_EXTERNAL,
@@ -112,7 +112,7 @@ def main():
                     resizeImage('Temp.png')
                     predictedClass, confidence = getPredictedClass()
                     showStatistics(predictedClass, confidence)
-                cv2.imshow("Thesholded", thresholded)
+                cv2.imshow("Thresholded", thresholded)
 
         # draw the segmented hand
         cv2.rectangle(clone, (left, top), (right, bottom), (0,255,0), 2)
@@ -138,7 +138,7 @@ def getPredictedClass():
     image = cv2.imread('Temp.png')
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     prediction = model.predict([gray_image.reshape(89, 100, 1)])
-    return np.argmax(prediction), (np.amax(prediction) / (prediction[0][0] + prediction[0][1] + prediction[0][2]))
+    return np.argmax(prediction), (np.amax(prediction) / (prediction[0][0] + prediction[0][1] + prediction[0][2] +prediction[0][3] + prediction[0][4]))
 
 def showStatistics(predictedClass, confidence):
 
@@ -146,13 +146,17 @@ def showStatistics(predictedClass, confidence):
     className = ""
 
     if predictedClass == 0:
-        className = "Swing"
+        className = "Thank You"
     elif predictedClass == 1:
-        className = "Palm"
+        className = "Hi"
     elif predictedClass == 2:
-        className = "Fist"
+        className = "I love You"
+    elif predictedClass == 3:
+        className = "Yes"
+    elif predictedClass == 4:
+        className = "No"
 
-    cv2.putText(textImage,"Pedicted Class : " + className, 
+    cv2.putText(textImage,"Predicted Class : " + className, 
     (30, 30), 
     cv2.FONT_HERSHEY_SIMPLEX, 
     1,
@@ -171,7 +175,7 @@ def showStatistics(predictedClass, confidence):
 
 
 # Model defined
-tf.reset_default_graph()
+tf.compat.v1.reset_default_graph()
 convnet=input_data(shape=[None,89,100,1],name='input')
 convnet=conv_2d(convnet,32,2,activation='relu')
 convnet=max_pool_2d(convnet,2)
@@ -196,7 +200,7 @@ convnet=max_pool_2d(convnet,2)
 convnet=fully_connected(convnet,1000,activation='relu')
 convnet=dropout(convnet,0.75)
 
-convnet=fully_connected(convnet,3,activation='softmax')
+convnet=fully_connected(convnet,5,activation='softmax')
 
 convnet=regression(convnet,optimizer='adam',learning_rate=0.001,loss='categorical_crossentropy',name='regression')
 

@@ -18,7 +18,7 @@ def run_avg(image, aWeight):
     cv2.accumulateWeighted(image, bg, aWeight)
 
 
-def segment(image, threshold=25):
+def segment(image, threshold=30):
     global bg
     # find the absolute difference between background and current frame
     diff = cv2.absdiff(bg.astype("uint8"), image)
@@ -27,7 +27,7 @@ def segment(image, threshold=25):
     thresholded = cv2.threshold(diff,
                                 threshold,
                                 255,
-                                cv2.THRESH_BINARY)[1]
+                                cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
 
     # get the contours in the thresholded image
     (cnts, _) = cv2.findContours(thresholded.copy(),
@@ -105,7 +105,7 @@ def main():
                     if start_recording:
 
                         # Mention the directory in which you wanna store the images followed by the image name
-                        cv2.imwrite("Dataset/FistTest/fist_" +
+                        cv2.imwrite("Dataset/ThankYouImages/ty_" +
                                     str(image_num) + '.png', thresholded)
                         image_num += 1
                     cv2.imshow("Thesholded", thresholded)
@@ -123,14 +123,14 @@ def main():
             keypress = cv2.waitKey(1) & 0xFF
 
             # if the user pressed "q", then stop looping
-            if keypress == ord("q") or image_num > 100:
+            if keypress == ord("q") or image_num > 1000:
                 break
 
             if keypress == ord("s"):
                 start_recording = True
 
         else:
-            print("[Warning!] Error input, Please check your(camra Or video)")
+            print("[Warning!] Error input, Please check your(camera Or video)")
             break
 
 
